@@ -94,12 +94,14 @@ export default function (opts) {
     const setCacheValue = async function (queryKey, value, ttl) {
       let metadata = { lastWrite: Date.now() };
       let data = value;
+      let message = '';
 
       if (value && value.data) {
         metadata = fp.assign(metadata, value.metadata || fp.omit(['data'], value));
         data = value.data;
+        message = value.message || '';
       }
-      return cacheMap.set(queryKey, JSON.stringify({ metadata, data }));
+      return cacheMap.set(queryKey, JSON.stringify({ message, metadata, data }));
     };
 
     const touchService = async function (nameKey) {

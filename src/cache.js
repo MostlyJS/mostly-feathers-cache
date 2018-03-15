@@ -115,14 +115,12 @@ export default function (opts) {
 
     if (context.type === 'after') {
 
-      const saveForCache = async function (items) {
-        for (const item of items) {
-          const idKey = opts.keyPrefix + item[idField];
-          const queryKey = genQueryKey(context, item[idField]);
-          if (!fp.contains(queryKey, context.cacheHits || [])) {
-            debug(`>> ${svcKey} set cache: ${queryKey}`);
-            await setCacheValue(queryKey, item, svcTtl);
-          }
+      const saveForCache = async function (id, value) {
+        const idKey = opts.keyPrefix + id;
+        const queryKey = genQueryKey(context, id);
+        if (!fp.contains(queryKey, context.cacheHits || [])) {
+          debug(`>> ${svcKey} set cache: ${queryKey}`);
+          await setCacheValue(queryKey, value, svcTtl);
         }
       };
 
@@ -136,7 +134,12 @@ export default function (opts) {
           // save for cache
           if (context.id) {
             const item = helpers.getHookData(context);
-            await saveForCache([item]);
+            if (item.id !== context.id) {
+              // save as virutal id like username, path, etc
+              await saveForCache(context.id, item);
+            } else {
+              await saveForCache(item[idField], item);
+            }
           }
           break;
         }

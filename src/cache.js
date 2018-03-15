@@ -1,3 +1,4 @@
+import assert from 'assert';
 import crypto from 'crypto';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
@@ -10,7 +11,7 @@ const defaultOptions = {
   idField: 'id',
   keyPrefix: 'mostly:cache:',
   perUser: false,
-  ttl: 60
+  ttl: 600 // seconds
 };
 
 /**
@@ -29,79 +30,83 @@ const defaultOptions = {
  *   - lastWrite: time
  *   - queryKey: value
  */
-export default function (cacheMap, opts) {
+export default function (opts) {
   opts = fp.assign(defaultOptions, opts);
-
-  // generate a unique key for query with same params
-  // you can fake a query also to hit the cache
-  const genQueryKey = (context, id, fakeQuery) => {
-    const hash = crypto.createHash('md5')
-      .update(context.path)
-      .update(context.method)
-      .update(JSON.stringify(fakeQuery || context.params.query || {}))
-      .update(context.params.provider || '')
-      .update(fp.dotPath('headers.enrichers-document', context.params) || '')
-      .update(fp.dotPath('headers.enrichers-document', context.params) || '')
-      .update(opts.perUser && context.params.user && context.params.user.id || '')
-      .digest('hex');
-    return opts.keyPrefix + (id? id + ':' + hash : hash);
-  };
-
-  // get query result from cacheMap and check lastWrite
-  const getCacheValue = async function (svcKey, idKey, queryKey) {
-    const results = await cacheMap.multi(svcKey, idKey, queryKey);
-    const svcMeta = results[0] && JSON.parse(results[0]);
-    const idMeta = results[1] && JSON.parse(results[1]);
-    const cacheValue = results[2] && JSON.parse(results[2]);
-
-    // special cache miss where it is out of date
-    if (cacheValue) {
-      let outdated = false;
-      if (svcMeta) {
-        outdated = outdated || cacheValue.metadata.lastWrite < svcMeta.lastWrite;
-      }
-      if (idMeta) {
-        outdated = outdated || cacheValue.metadata.lastWrite < idMeta.lastWrite;
-      }
-      if (svcMeta && idMeta) {
-        outdated = outdated || idMeta.lastWrite < svcMeta.lastWrite;
-      }
-      if (outdated) {
-        debug(`<< ${svcKey} out of date: ${queryKey}`);
-        return null;
-      } else {
-        debug(`<< ${svcKey} hit cache: ${queryKey}`);
-        return fp.dissocPath(['metadata', 'lastWrite'], cacheValue);
-      }
-    } else {
-      debug(`<< ${svcKey} miss cache: ${queryKey}`);
-      return null;
-    }
-  };
-
-  const setCacheValue = async function (queryKey, value, ttl) {
-    let metadata = { lastWrite: Date.now() };
-    let data = value;
-
-    if (value && value.data) {
-      metadata = fp.assign(metadata, value.metadata || fp.omit(['data'], value));
-      data = value.data;
-    }
-    return cacheMap.set(queryKey, JSON.stringify({ metadata, data }));
-  };
-
-  const touchService = async function (nameKey) {
-    debug('${nameKey} touched: ', Date.now());
-    return cacheMap.set(nameKey, JSON.stringify({
-      lastWrite: Date.now()
-    }));
-  };
+  assert(opts.name, 'app setting of cache is not found, check your app configuration');
 
   return async function (context) {
+    const cacheMap = context.app.get(opts.name);
+    assert(cacheMap, `app setting '${opts.name}' must be provided`);
+
     const idField = opts.idField || (context.service || {}).id;
     const svcName = (context.service || {}).name;
-   
+
     const svcKey = opts.keyPrefix + svcName;
+
+    // generate a unique key for query with same params
+    // you can fake a query also to hit the cache
+    const genQueryKey = (context, id, fakeQuery) => {
+      const hash = crypto.createHash('md5')
+        .update(context.path)
+        .update(context.method)
+        .update(JSON.stringify(fakeQuery || context.params.query || {}))
+        .update(context.params.provider || '')
+        .update(fp.dotPath('headers.enrichers-document', context.params) || '')
+        .update(fp.dotPath('headers.enrichers-document', context.params) || '')
+        .update(opts.perUser && context.params.user && context.params.user.id || '')
+        .digest('hex');
+      return opts.keyPrefix + (id? id + ':' + hash : hash);
+    };
+
+    // get query result from cacheMap and check lastWrite
+    const getCacheValue = async function (svcKey, idKey, queryKey) {
+      const results = await cacheMap.multi(svcKey, idKey, queryKey);
+      const svcMeta = results[0] && JSON.parse(results[0]);
+      const idMeta = results[1] && JSON.parse(results[1]);
+      const cacheValue = results[2] && JSON.parse(results[2]);
+
+      // special cache miss where it is out of date
+      if (cacheValue) {
+        let outdated = false;
+        if (svcMeta) {
+          outdated = outdated || cacheValue.metadata.lastWrite < svcMeta.lastWrite;
+        }
+        if (idMeta) {
+          outdated = outdated || cacheValue.metadata.lastWrite < idMeta.lastWrite;
+        }
+        if (svcMeta && idMeta) {
+          outdated = outdated || idMeta.lastWrite < svcMeta.lastWrite;
+        }
+        if (outdated) {
+          debug(`<< ${svcKey} out of date: ${queryKey}`);
+          return null;
+        } else {
+          debug(`<< ${svcKey} hit cache: ${queryKey}`);
+          return fp.dissocPath(['metadata', 'lastWrite'], cacheValue);
+        }
+      } else {
+        debug(`<< ${svcKey} miss cache: ${queryKey}`);
+        return null;
+      }
+    };
+
+    const setCacheValue = async function (queryKey, value, ttl) {
+      let metadata = { lastWrite: Date.now() };
+      let data = value;
+
+      if (value && value.data) {
+        metadata = fp.assign(metadata, value.metadata || fp.omit(['data'], value));
+        data = value.data;
+      }
+      return cacheMap.set(queryKey, JSON.stringify({ metadata, data }));
+    };
+
+    const touchService = async function (nameKey) {
+      debug('${nameKey} touched: ', Date.now());
+      return cacheMap.set(nameKey, JSON.stringify({
+        lastWrite: Date.now()
+      }));
+    };
 
     const saveHits = (queryKey) => {
       context.cacheHits = (context.cacheHits || []).concat(queryKey);

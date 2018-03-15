@@ -2,7 +2,7 @@ import assert from 'assert';
 import crypto from 'crypto';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
-import { helpers } from 'mostly-feathers-mongoose'
+import { helpers } from 'mostly-feathers-mongoose';
 import util from 'util';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:cache');
@@ -40,6 +40,7 @@ export default function (opts) {
 
     const idField = opts.idField || (context.service || {}).id;
     const svcName = (context.service || {}).name;
+    const svcTtl = (opts.strategies || {})[svcName] || opts.ttl;
 
     const svcKey = opts.keyPrefix + svcName;
 
@@ -120,7 +121,7 @@ export default function (opts) {
           const queryKey = genQueryKey(context, item[idField]);
           if (!fp.contains(queryKey, context.cacheHits || [])) {
             debug(`>> ${svcKey} set cache: ${queryKey}`);
-            await setCacheValue(queryKey, item, opts.ttl);
+            await setCacheValue(queryKey, item, svcTtl);
           }
         }
       };
@@ -128,7 +129,7 @@ export default function (opts) {
       switch (context.method) {
         case 'find': {
           const queryKey = genQueryKey(context);
-          await setCacheValue(queryKey, context.result, opts.ttl);
+          await setCacheValue(queryKey, context.result, svcTtl);
           break;
         }
         case 'get': {

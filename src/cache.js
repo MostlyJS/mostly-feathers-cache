@@ -5,7 +5,7 @@ import fp from 'mostly-func';
 import { helpers } from 'mostly-feathers-mongoose';
 import util from 'util';
 
-const debug = makeDebug('mostly:feathers-mongoose:hooks:cache');
+const debug = makeDebug('mostly:feathers-cache:cache');
 
 const defaultOptions = {
   enabled: true,

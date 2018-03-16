@@ -1,11 +1,8 @@
 import LruCache from 'lru-cache';
 import fp from 'mostly-func';
 
-LruCache.prototype.delete = LruCache.prototype.del;
-LruCache.prototype.clear = LruCache.prototype.reset;
-
 const defaultOptions = {
-  max: 200,
+  max: 500,
   maxAge: 1000 * 60 * 10
 };
 

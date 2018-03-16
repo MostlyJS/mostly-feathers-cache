@@ -10,6 +10,7 @@ const debug = makeDebug('mostly:feathers-mongoose:hooks:cache');
 const defaultOptions = {
   idField: 'id',
   keyPrefix: 'mostly:cache:',
+  headers: [],
   perUser: false,
   ttl: 600 // seconds
 };
@@ -30,8 +31,8 @@ const defaultOptions = {
  *   - lastWrite: time
  *   - queryKey: value
  */
-export default function (opts) {
-  opts = fp.assign(defaultOptions, opts);
+export default function (...opts) {
+  opts = fp.assign(defaultOptions, ...opts);
   assert(opts.name, 'app setting of cache is not found, check your app configuration');
 
   return async function (context) {
@@ -45,15 +46,15 @@ export default function (opts) {
     const svcKey = opts.keyPrefix + svcName;
 
     // generate a unique key for query with same params
-    // you can fake a query also to hit the cache
-    const genQueryKey = (context, id, fakeQuery) => {
+    const genQueryKey = (context, id) => {
+      const headers = fp.pickPath(opts.headers || [], context.params.headers || {});
       const hash = crypto.createHash('md5')
         .update(context.path)
         .update(context.method)
-        .update(JSON.stringify(fakeQuery || context.params.query || {}))
+        .update(JSON.stringify(context.params.query || {}))
+        .update(context.params.__action || '')
         .update(context.params.provider || '')
-        .update(fp.dotPath('headers.enrichers-document', context.params) || '')
-        .update(fp.dotPath('headers.enrichers-document', context.params) || '')
+        .update(headers && fp.values(headers).join(''))
         .update(opts.perUser && context.params.user && context.params.user.id || '')
         .digest('hex');
       return opts.keyPrefix + (id? id + ':' + hash : hash);

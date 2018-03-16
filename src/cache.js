@@ -8,6 +8,7 @@ import util from 'util';
 const debug = makeDebug('mostly:feathers-mongoose:hooks:cache');
 
 const defaultOptions = {
+  enabled: true,
   idField: 'id',
   keyPrefix: 'mostly:cache:',
   headers: [],
@@ -36,6 +37,8 @@ export default function (...opts) {
   assert(opts.name, 'app setting of cache is not found, check your app configuration');
 
   return async function (context) {
+    if (!opts.enabled) return;
+
     const cacheMap = context.app.get(opts.name);
     assert(cacheMap, `app setting '${opts.name}' must be provided`);
 

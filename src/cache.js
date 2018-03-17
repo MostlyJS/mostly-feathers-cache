@@ -116,14 +116,13 @@ export default function (...opts) {
       }));
     };
 
-    const saveHits = (queryKey) => {
+    const addCacheHits = (queryKey) => {
       context.cacheHits = (context.cacheHits || []).concat(queryKey);
     };
 
     if (context.type === 'after') {
 
       const saveForCache = async function (svcKey, id, value) {
-        const idKey = opts.keyPrefix + id;
         const queryKey = genQueryKey(context, id);
         if (!fp.contains(queryKey, context.cacheHits || [])) {
           await setCacheValue(svcKey, queryKey, value, svcTtl);
@@ -132,8 +131,7 @@ export default function (...opts) {
 
       switch (context.method) {
         case 'find': {
-          const queryKey = genQueryKey(context);
-          await setCacheValue(svcKey, queryKey, context.result, svcTtl);
+          await saveForCache(svcKey, null, context.result);
           break;
         }
         case 'get': {
@@ -165,6 +163,7 @@ export default function (...opts) {
           const queryKey = genQueryKey(context);
           const values = await getCacheValue(svcKey, null, queryKey);
           if (values) {
+            addCacheHits(queryKey);
             context.result = values;
           }
           break;
@@ -177,7 +176,7 @@ export default function (...opts) {
             const queryKey = genQueryKey(context, context.id);
             const value = await getCacheValue(svcKey, idKey, queryKey);
             if (value) {
-              saveHits(queryKey);
+              addCacheHits(queryKey);
               context.result = value.data;
             }
           }

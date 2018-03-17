@@ -95,7 +95,7 @@ export default function (...opts) {
       }
     };
 
-    const setCacheValue = async function (queryKey, value, ttl) {
+    const setCacheValue = async function (svcKey, queryKey, value, ttl) {
       let metadata = { lastWrite: Date.now() };
       let data = value;
       let message = '';
@@ -105,11 +105,12 @@ export default function (...opts) {
         data = value.data;
         message = value.message || '';
       }
+      debug(`>> ${svcKey} set cache: ${queryKey}`);
       return cacheMap.set(queryKey, JSON.stringify({ message, metadata, data }));
     };
 
     const touchService = async function (nameKey) {
-      debug('${nameKey} touched: ', Date.now());
+      debug(`>> ${svcKey} touched ${nameKey}: ` + Date.now());
       return cacheMap.set(nameKey, JSON.stringify({
         lastWrite: Date.now()
       }));
@@ -121,19 +122,18 @@ export default function (...opts) {
 
     if (context.type === 'after') {
 
-      const saveForCache = async function (id, value) {
+      const saveForCache = async function (svcKey, id, value) {
         const idKey = opts.keyPrefix + id;
         const queryKey = genQueryKey(context, id);
         if (!fp.contains(queryKey, context.cacheHits || [])) {
-          debug(`>> ${svcKey} set cache: ${queryKey}`);
-          await setCacheValue(queryKey, value, svcTtl);
+          await setCacheValue(svcKey, queryKey, value, svcTtl);
         }
       };
 
       switch (context.method) {
         case 'find': {
           const queryKey = genQueryKey(context);
-          await setCacheValue(queryKey, context.result, svcTtl);
+          await setCacheValue(svcKey, queryKey, context.result, svcTtl);
           break;
         }
         case 'get': {
@@ -142,9 +142,9 @@ export default function (...opts) {
             const item = helpers.getHookData(context);
             if (item.id !== context.id) {
               // save as virutal id like username, path, etc
-              await saveForCache(context.id, item);
+              await saveForCache(svcKey, context.id, item);
             } else {
-              await saveForCache(item[idField], item);
+              await saveForCache(svcKey, item[idField], item);
             }
           }
           break;

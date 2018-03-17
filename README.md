@@ -1,18 +1,16 @@
-MostlyJS Common Utilities
-=========================
+MostlyJS Feathers Cache
+=======================
 
-[![Build Status](https://travis-ci.org/mostlyjs/mostly-utils-common.svg)](https://travis-ci.org/mostlyjs/mostly-utils-common)
+[![Build Status](https://travis-ci.org/mostlyjs/mostly-feathers-cache.svg)](https://travis-ci.org/mostlyjs/mostly-feathers-cache)
 
-Common utilities functions for MostlyJS microservices.
-
-* cacheMap
+Cache for MostlyJS microservices build with feathers mongoose.
 
 # Usage
 
 ## Installation
 
 ```bash
-npm install mostly-utils-common
+npm install mostly-feathers-cache
 ```
 
 # License

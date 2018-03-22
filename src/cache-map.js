@@ -7,28 +7,28 @@ const defaultOptions = {
 };
 
 export class CacheMap {
-  constructor(options) {
+  constructor (options) {
     options = fp.assign(defaultOptions, options);
     this._cache = new LruCache(options);
   }
 
-  async get(id) {
+  async get (id) {
     return id && this._cache.get(id);
   }
 
-  async multi(...args) {
+  async multi (...args) {
     return Promise.all(fp.map(async (id) => this.get(id), args));
   }
 
-  async set(id, val, ttl) {
+  async set (id, val, ttl) {
     return this._cache.set(id, val, ttl * 1000);
   }
 
-  async delete(id) {
+  async delete (id) {
     return this._cache.del(id);
   }
 
-  async clear() {
+  async clear () {
     return this._cache.reset();
   }
 }

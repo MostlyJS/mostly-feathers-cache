@@ -32,7 +32,7 @@ const defaultOptions = {
  *   - lastWrite: time
  *   - queryKey: value
  */
-export default function (...opts) {
+export default function cache (...opts) {
   opts = fp.assign(defaultOptions, ...opts);
   assert(opts.name, 'app setting of cache is not found, check your app configuration');
 

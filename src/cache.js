@@ -55,7 +55,7 @@ export default function cache (...opts) {
         .update(context.path)
         .update(context.method)
         .update(JSON.stringify(context.params.query || {}))
-        .update(context.params.__action || '')
+        .update(context.params.action || '')
         .update(context.params.provider || '')
         .update(headers && fp.values(headers).join(''))
         .update(opts.perUser && context.params.user && context.params.user.id || '')

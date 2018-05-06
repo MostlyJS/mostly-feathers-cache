@@ -1,6 +1,6 @@
 {
   "name": "mostly-feathers-cache",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Cache for MostlyJS microservices build with feathers mongoose",
   "author": "Forafish",
   "license": "MIT",

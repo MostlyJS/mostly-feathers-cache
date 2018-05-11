@@ -8,7 +8,7 @@ const defaultOptions = {
 
 export class CacheMap {
   constructor (options) {
-    options = fp.assign(defaultOptions, options);
+    options = fp.assignAll(defaultOptions, options);
     this._cache = new LruCache(options);
   }
 

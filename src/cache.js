@@ -33,7 +33,7 @@ const defaultOptions = {
  *   - queryKey: value
  */
 export default function cache (...opts) {
-  opts = fp.assign(defaultOptions, ...opts);
+  opts = fp.assignAll(defaultOptions, ...opts);
   assert(opts.name, 'app setting of cache is not found, check your app configuration');
 
   return async function (context) {
@@ -101,7 +101,7 @@ export default function cache (...opts) {
       let message = '';
 
       if (value && value.data) {
-        metadata = fp.assign(metadata, value.metadata || fp.omit(['data'], value));
+        metadata = fp.assignAll(metadata, value.metadata || fp.omit(['data'], value));
         data = value.data;
         message = value.message || '';
       }

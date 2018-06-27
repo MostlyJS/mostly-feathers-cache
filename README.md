@@ -5,6 +5,10 @@ MostlyJS Feathers Cache
 
 Cache for MostlyJS microservices built with feathers mongoose.
 
+# Documentation
+
+Please see the [documentation site](https://mostlyjs.github.io).
+
 # Usage
 
 ## Installation

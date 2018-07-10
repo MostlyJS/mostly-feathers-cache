@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "debug": "^2.6.6",
-    "esm": "^3.0.63",
     "lodash": "^4.17.4"
   },
   "devDependencies": {

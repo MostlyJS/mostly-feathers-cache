@@ -1,4 +1,4 @@
-import cache from './cache';
-import cacheMap from './cache-map';
+const cache = require('./cache');
+const cacheMap = require('./cache-map');
 
-export default { cache, cacheMap };
+module.exports = { cache, cacheMap };

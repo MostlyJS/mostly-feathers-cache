@@ -1,9 +1,8 @@
-import assert from 'assert';
-import crypto from 'crypto';
-import makeDebug from 'debug';
-import fp from 'mostly-func';
-import { helpers } from 'mostly-feathers-mongoose';
-import util from 'util';
+const assert = require('assert');
+const crypto = require('crypto');
+const makeDebug = require('debug');
+const fp = require('mostly-func');
+const { helpers } = require('mostly-feathers-mongoose');
 
 const debug = makeDebug('mostly:feathers-cache:cache');
 
@@ -32,7 +31,7 @@ const defaultOptions = {
  *   - lastWrite: time
  *   - queryKey: value
  */
-export default function cache (...opts) {
+module.exports = function cache (...opts) {
   opts = fp.assignAll(defaultOptions, ...opts);
   assert(opts.name, 'app setting of cache is not found, check your app configuration');
 
@@ -198,4 +197,4 @@ export default function cache (...opts) {
 
     return context;
   };
-}
+};

@@ -1,12 +1,12 @@
-import LruCache from 'lru-cache';
-import fp from 'mostly-func';
+const LruCache = require('lru-cache');
+const fp = require('mostly-func');
 
 const defaultOptions = {
   max: 500,
   maxAge: 1000 * 60 * 10
 };
 
-export class CacheMap {
+class CacheMap {
   constructor (options) {
     options = fp.assignAll(defaultOptions, options);
     this._cache = new LruCache(options);
@@ -33,6 +33,7 @@ export class CacheMap {
   }
 }
 
-export default function init (options) {
+module.exports = function init (options) {
   return new CacheMap(options);
-}
+};
+module.exports.CacheMap = CacheMap;

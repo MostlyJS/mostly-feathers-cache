@@ -14,7 +14,7 @@ Please see the [documentation site](https://mostlyjs.github.io).
 ## Installation
 
 ```bash
-npm install mostly-feathers-cache
+npm install mostly-feathers-cache --save
 ```
 
 # License

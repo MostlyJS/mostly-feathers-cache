@@ -28,7 +28,8 @@
     "url": "https://github.com/MostlyJS/mostly-feathers-cache/issues"
   },
   "dependencies": {
-    "debug": "^2.6.6"
+    "debug": "^2.6.6",
+    "lru-cache": "^4.1.3"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.2",
